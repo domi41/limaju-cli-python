@@ -103,7 +103,7 @@ def sort_two_candidates(judgments_of, tally_of, mentions, ca, cb):
         return positions[mdca] - positions[mdcb]
 
 
-def main(args):
+def main(args_parser, args):
     log("MAJORITY JUDGMENT POLLING -- Version %s" % __version__)
 
     # In decreasing order.
@@ -122,18 +122,20 @@ def main(args):
         with open(args.mentions_file) as f:
             mentions = [l.strip() for l in f.readlines() if l and l.strip()]
 
-    log("Going to use the following mentions:")
+    log("\nGoing to use the following mentions:")
     log(''+(', '.join(mentions)))
 
-    if args.input_file is not None:
-        with open(find_file(args.input_file)) as f:
-            input_csv_strings = f.readlines()
-    else:
-        input_csv_strings = sys.stdin.readlines()
+    if args.input_file is None:
+        exit(1)
+
+    log("\nWaiting for input judgments...")
+    log("(use CTRL+D to exit)")
+    input_csv_strings = args.input_file.readlines()
 
     if not input_csv_strings:
-        log("Provide an input file with --input.")
-        exit(1)
+        log("Please provide an input CSV file.")
+        args_parser.print_help()
+        args_parser.exit(1)
 
     judgments_data = csv.reader(
         StringIO("".join(input_csv_strings)),
@@ -142,13 +144,11 @@ def main(args):
         lineterminator='\n'
     )
 
-    detected_mentions = list()
     candidates_list = list()
     everyones_judgments = dict()
     skip_cols = int(args.skip_cols)
     skip_rows = 0
-    # Set to -1 to disable header
-    header_on_row = skip_rows + 0
+    header_on_row = skip_rows + 0  # Set to -1 to disable header
 
     current_row = -1
     for judgments in judgments_data:
@@ -184,7 +184,6 @@ def main(args):
             if candidate not in everyones_judgments:
                 everyones_judgments[candidate] = list()
             everyones_judgments[candidate].append(judgments[i])
-        # print(judgments)
 
     mentions_dict = get_positions(mentions)
 
@@ -230,7 +229,7 @@ def main(args):
     )
 
     for i, candidate in enumerate(sorted_candidates):
-        log("%02d. %18s  %s" % (
+        log("%02d.\t%18s\t%s" % (
             i+1,
             get_median(judgments_tallies[candidate], mentions),
             candidate,
@@ -239,9 +238,6 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-
-    # Required positional argument
-    # parser.add_argument("arg", help="Required positional argument")
 
     # Optional argument flag which defaults to False
     # parser.add_argument(
@@ -252,13 +248,12 @@ if __name__ == "__main__":
     #     help=""
     # )
 
-    # Input CSV file.  Overrides stdin when provided.
     parser.add_argument(
-        "-i",
-        "--input",
-        action="store",
-        dest="input_file",
-        help="A CSV file with the judgments."
+        'input_file',
+        nargs='?',
+        type=argparse.FileType('r'),
+        help="A CSV file with the judgments.",
+        default=sys.stdin
     )
 
     parser.add_argument(
@@ -266,7 +261,10 @@ if __name__ == "__main__":
         "--mentions",
         action="store",
         dest="mentions_file",
-        help="A text file with one mention per line."
+        help="""
+        A text file with one mention per line,
+        in order from highest to lowest.
+        """
     )
 
     parser.add_argument(
@@ -294,4 +292,4 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    main(args)
+    main(parser, args)
