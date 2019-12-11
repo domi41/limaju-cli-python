@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 """
-
 A tool to summarize majority judgment polling.
-
 """
 
 __author__ = "Constituantes"
@@ -17,7 +15,6 @@ import math
 import copy
 from io import StringIO
 from functools import cmp_to_key
-# import pandas
 
 
 VERBOSITY_NONE = 0
@@ -233,8 +230,8 @@ def main(args):
     )
 
     for i, candidate in enumerate(sorted_candidates):
-        log("%02d. %14s  %s" % (
-            i,
+        log("%02d. %18s  %s" % (
+            i+1,
             get_median(judgments_tallies[candidate], mentions),
             candidate,
         ))
@@ -253,15 +250,6 @@ if __name__ == "__main__":
     #     action="store_true",
     #     default=False,
     #     help=""
-    # )
-
-    # Optional argument which requires a parameter (eg. -d test)
-    # parser.add_argument(
-    #     "-c",
-    #     "--config",
-    #     action="store",
-    #     dest="config",
-    #     help="A configuration file in YML."
     # )
 
     # Input CSV file.  Overrides stdin when provided.

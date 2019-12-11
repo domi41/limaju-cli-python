@@ -1,25 +1,40 @@
-
 # Majority Judgment Polling
 
+> Requires `Python 3.*`.
+
+## Usage
+
+    cd limaju
+
+### Via STDIN
+
+    cat examples/judgments_01.csv | ./limaju.py
+
+### Via argument
+
+    ./limaju.py --input examples/judgments_01.csv
+
+### With custom mentions
+
+    ./limaju.py \
+        --input examples/judgments_02.csv \
+        --mentions examples/mentions_02 \
+        --skip-cols 1
 
 
 ## Mentions
 
-Mentions are ordered.  Topmost wins.
-You may provide your own mentions in the configuration file.
+Mentions are ordered.  Topmost wins.  Case matters.
 
-#### config.yml
-```yaml
-mentions:
-    - name: EXCELLENT
-    - name: VERY GOOD
-    - name: GOOD
-      color: #ff3399
-    - name: SOMEWHAT GOOD
-    - name: PASSABLE
-    - name: POOR
-    - name: REJECT
-```
+### Defaults
+
+    EXCELLENT
+    VERY GOOD
+    GOOD
+    SOMEWHAT GOOD
+    PASSABLE
+    POOR
+    REJECT
 
 
 ## Input Vote Data
@@ -74,10 +89,6 @@ GOOD,REJECT,SOMEWHAT GOOD,REJECT,PASSABLE,PASSABLE
 PASSABLE,PASSABLE,REJECT,GOOD,PASSABLE,VERY GOOD
 ```
 
-
-## Usage
-
-    cat votes.csv | limaju.py -c config.yml
 
 
 
