@@ -1,7 +1,30 @@
 #!/usr/bin/env python
 
 """
-A tool to summarize majority judgment polling.
+A tool to deliberate with majority judgment polling.
+
+Usage:
+
+    ./limaju.py judgments.csv --mentions mentions.txt
+
+where judgments.csv looks like this
+
+    Tyran Sanguinaire, Chien, Écologiste Décroissant
+    insuffisant⋅e,excellent⋅e,excellent⋅e
+    à rejeter,excellent⋅e,à rejeter
+    à rejeter,insuffisant⋅e,très bien
+
+and mentions.txt looks like this
+
+    excellent⋅e
+    très bien
+    bien
+    assez bien
+    passable
+    insuffisant⋅e
+    à rejeter
+
+Run `./limaju.py --help` for more options.
 """
 
 __author__ = "Constituantes"
@@ -116,69 +139,20 @@ def sort_two_candidates(judgments_of, tally_of, mentions, ca, cb):
         return positions[mdca] - positions[mdcb]
 
 
-def main(args_parser, args):  # move to bottom, no need for a func
-    log("MAJORITY JUDGMENT POLLING -- Version %s" % __version__)
-
-    # In decreasing order.
-    default_mentions = [
-        'EXCELLENT',
-        'VERY GOOD',
-        'GOOD',
-        'SOMEWHAT GOOD',
-        'PASSABLE',
-        'POOR',
-        'REJECT',
-    ]
-    if not args.mentions_file:
-        mentions = default_mentions
-    else:
-        with open(args.mentions_file) as f:
-            mentions = [l.strip() for l in f.readlines() if l and l.strip()]
-
-    log("\nGoing to use the following mentions:")
-    log(''+(', '.join(mentions)))
-
-    if args.input_file is None:
-        exit(1)
-
-    log("\nWaiting for input judgments...")
-    log("(use CTRL+D to exit)")
-    input_csv_strings = args.input_file.readlines()
-
-    if not input_csv_strings:
-        log("Please provide an input CSV file.")
-        args_parser.print_help()
-        args_parser.exit(1)
-
-    judgments_data = load_judgments_from_string(input_csv_strings)
-    # judgments_data = csv.reader(
-    #     StringIO("".join(input_csv_strings).strip()),
-    #     skipinitialspace=True,
-    #     delimiter=',',
-    #     lineterminator='\r\n'
-    # )
-
-    deliberation, tally = deliberate(
-        judgments_data, mentions,
-        int(args.skip_cols)
-    )
-
-    log("\nDELIBERATION")
-    for i, candidate in enumerate(deliberation):
-        log("%02d.\t%18s\t%s" % (
-            i+1,
-            get_median(tally[candidate], mentions),
-            candidate,
-        ))
-
-
 def load_judgments_from_string(judgments_string):
-    judgments_data = csv.reader(
+    judgments_data_reader = csv.reader(
         StringIO("".join(judgments_string).strip()),
         skipinitialspace=True,
         delimiter=',',
         lineterminator='\n'
     )
+    # Load it all up in the memory, who cares?
+    judgments_data = []
+    for judgments in judgments_data_reader:
+        if not judgments:
+            #log("Skipping empty line at row %d..." % current_row)
+            continue
+        judgments_data.append(judgments)
 
     return judgments_data
 
@@ -288,6 +262,58 @@ def deliberate(judgments_data,
     )
 
     return sorted_candidates, judgments_tallies
+
+
+def main(args_parser, args):  # move to bottom, no need for a func
+    log("MAJORITY JUDGMENT POLLING -- Version %s" % __version__)
+
+    # In decreasing order.
+    default_mentions = [
+        'EXCELLENT',
+        'VERY GOOD',
+        'GOOD',
+        'SOMEWHAT GOOD',
+        'PASSABLE',
+        'POOR',
+        'REJECT',
+    ]
+    if not args.mentions_file:
+        mentions = default_mentions
+    else:
+        with open(args.mentions_file) as f:
+            mentions = [l.strip() for l in f.readlines() if l and l.strip()]
+
+    log("\nGoing to use the following mentions:")
+    log(''+(', '.join(mentions)))
+
+    if args.input_file is None:
+        exit(1)
+
+    log("\nWaiting for input judgments...")
+    log("(use CTRL+D to exit)")
+    input_csv_strings = args.input_file.readlines()
+
+    if not input_csv_strings:
+        log("Please provide an input CSV file.")
+        args_parser.print_help()
+        args_parser.exit(1)
+
+    judgments_data = load_judgments_from_string(input_csv_strings)
+
+    log("\nRead judgments from %d judges." % (len(judgments_data)-1))
+
+    deliberation, tally = deliberate(
+        judgments_data, mentions,
+        int(args.skip_cols)
+    )
+
+    log("\nDELIBERATION")
+    for i, candidate in enumerate(deliberation):
+        log("%02d.\t%18s\t%s" % (
+            i+1,
+            get_median(tally[candidate], mentions),
+            candidate,
+        ))
 
 
 if __name__ == "__main__":
