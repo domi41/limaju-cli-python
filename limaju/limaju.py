@@ -196,7 +196,7 @@ def deliberate(judgments_data,
 
         if not candidates_list:
             candidates_list = \
-                ["Candidate %s"%(chr(i)) for i in range(len(judgments))]
+                ["Candidate %s"%(chr(64+i)) for i in range(len(judgments))]
 
         for i, mention in enumerate(judgments):
             if mention is None or mention == '':
