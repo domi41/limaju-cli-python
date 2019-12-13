@@ -4,6 +4,8 @@
 
 ## Usage
 
+Download the source files.  (or just `limaju.py`)
+
     cd limaju
 
 ### Via STDIN
@@ -37,11 +39,15 @@ Mentions are ordered.  Topmost wins.  Case matters.
     REJECT
 
 
-## Input Vote Data
+## Judgments Data Example
 
 ### As CSV
 
-#### votes.csv
+#### judgments.csv
+
+Quotes (`"`) are optional,
+if you don't put commas or quotes in your candidates or mentions.  _(best not)_
+
 ```csv
 "Tyrant","Capitalist","Ecologist","Communist","Preacher","Random"
 POOR,REJECT,VERY GOOD,VERY GOOD,PASSABLE,EXCELLENT
@@ -91,8 +97,10 @@ PASSABLE,PASSABLE,REJECT,GOOD,PASSABLE,VERY GOOD
 
 
 
+## Tests
 
+This software is unit-tested with `unittest`.
 
+It's basic, but it works.
 
-
-
+    python limaju/test_limaju.py -vvv

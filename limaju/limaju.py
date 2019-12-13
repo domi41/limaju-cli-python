@@ -98,8 +98,8 @@ def sort_two_candidates(judgments_of, tally_of, mentions, ca, cb):
     positions = get_positions(mentions)
 
     if mdca == mdcb:
-        cotoca = copy.copy(toca)
-        cotocb = copy.copy(tocb)
+        cotoca = copy.deepcopy(toca)
+        cotocb = copy.deepcopy(tocb)
 
         while not is_tally_empty(cotoca) and not is_tally_empty(cotocb):
             nemdca = get_median(cotoca, mentions)
@@ -109,7 +109,8 @@ def sort_two_candidates(judgments_of, tally_of, mentions, ca, cb):
                 decrement_mention(cotocb, nemdcb)
             else:
                 return positions[nemdca] - positions[nemdcb]
-
+        log("EXACT EQUALITY FOUND FOR CANDIDATES")
+        log("%s == %s" % (ca, cb))
         return 0
     else:
         return positions[mdca] - positions[mdcb]
@@ -162,6 +163,7 @@ def main(args_parser, args):  # move to bottom, no need for a func
         int(args.skip_cols)
     )
 
+    log("\nDELIBERATION")
     for i, candidate in enumerate(deliberation):
         log("%02d.\t%18s\t%s" % (
             i+1,
@@ -181,8 +183,8 @@ def load_judgments_from_string(judgments_string):
     return judgments_data
 
 
-def load_mentions_from_string(ms):
-    return [m.strip() for m in ms.strip().split() if m and m.strip()]
+def load_mentions_from_string(ms, sep="\n"):
+    return [m.strip() for m in ms.strip().split(sep) if m and m.strip()]
 
 
 def deliberate(judgments_data,
