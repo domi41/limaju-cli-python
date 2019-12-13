@@ -16,6 +16,7 @@ import copy
 from io import StringIO
 from functools import cmp_to_key
 
+PY2 = sys.version_info.major == 2
 
 VERBOSITY_NONE = 0
 VERBOSITY_SOME = 1
@@ -29,6 +30,17 @@ def log(message):
 
 def find_file(some_vague_path):
     return some_vague_path
+
+
+def is_string(that_thing):
+    return \
+        isinstance(that_thing, basestring if PY2 else str) \
+        or \
+        isinstance(that_thing, unicode if PY2 else str) \
+        or \
+        isinstance(that_thing, basestring if PY2 else (str, bytes)) \
+        or \
+        isinstance(that_thing, bytes)
 
 
 def get_positions(mentions):
@@ -103,7 +115,7 @@ def sort_two_candidates(judgments_of, tally_of, mentions, ca, cb):
         return positions[mdca] - positions[mdcb]
 
 
-def main(args_parser, args):
+def main(args_parser, args):  # move to bottom, no need for a func
     log("MAJORITY JUDGMENT POLLING -- Version %s" % __version__)
 
     # In decreasing order.
@@ -137,18 +149,57 @@ def main(args_parser, args):
         args_parser.print_help()
         args_parser.exit(1)
 
+    judgments_data = load_judgments_from_string(input_csv_strings)
+    # judgments_data = csv.reader(
+    #     StringIO("".join(input_csv_strings).strip()),
+    #     skipinitialspace=True,
+    #     delimiter=',',
+    #     lineterminator='\r\n'
+    # )
+
+    deliberation, tally = deliberate(
+        judgments_data, mentions,
+        int(args.skip_cols)
+    )
+
+    for i, candidate in enumerate(deliberation):
+        log("%02d.\t%18s\t%s" % (
+            i+1,
+            get_median(tally[candidate], mentions),
+            candidate,
+        ))
+
+
+def load_judgments_from_string(judgments_string):
     judgments_data = csv.reader(
-        StringIO("".join(input_csv_strings)),
+        StringIO("".join(judgments_string).strip()),
         skipinitialspace=True,
         delimiter=',',
         lineterminator='\n'
     )
 
+    return judgments_data
+
+
+def load_mentions_from_string(ms):
+    return [m.strip() for m in ms.strip().split() if m and m.strip()]
+
+
+def deliberate(judgments_data,
+               mentions,
+               skip_cols=0):
+
+    ignore_blanks = False
     candidates_list = list()
     everyones_judgments = dict()
-    skip_cols = int(args.skip_cols)
     skip_rows = 0
     header_on_row = skip_rows + 0  # Set to -1 to disable header
+
+    if is_string(judgments_data):
+        judgments_data = load_judgments_from_string(judgments_data)
+
+    if is_string(mentions):
+        mentions = load_mentions_from_string(mentions)
 
     current_row = -1
     for judgments in judgments_data:
@@ -171,7 +222,13 @@ def main(args_parser, args):
             candidates_list = \
                 ["Candidate %s"%(chr(i)) for i in range(len(judgments))]
 
-        for mention in judgments:
+        for i, mention in enumerate(judgments):
+            if mention is None or mention == '':
+                if ignore_blanks:
+                    continue
+                else:
+                    judgments[i] = mentions[-1]
+                    continue
             if mention not in mentions:
                 log("Found unknown mention `%s' at row %d." % (
                     mention, current_row
@@ -228,12 +285,7 @@ def main(args_parser, args):
         key=cmp_to_key(_cmp_candidates)
     )
 
-    for i, candidate in enumerate(sorted_candidates):
-        log("%02d.\t%18s\t%s" % (
-            i+1,
-            get_median(judgments_tallies[candidate], mentions),
-            candidate,
-        ))
+    return sorted_candidates, judgments_tallies
 
 
 if __name__ == "__main__":
