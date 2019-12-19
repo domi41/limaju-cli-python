@@ -263,6 +263,12 @@ def deliberate(judgments_data,
 
 
 def sort_candidates(judgments_tallies, candidates, mentions):
+    """
+    :param judgments_tallies: Dict, candidate => mention => int
+    :param candidates: List
+    :param mentions: List, highest to lowest
+    :return:
+    """
     def _cmp_candidates(ca, cb):
         # Here we could hook to external, replaceable classes
         # to simplify usage of other algorithms.
