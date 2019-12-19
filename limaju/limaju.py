@@ -112,7 +112,7 @@ def decrement_mention(tally, mention):
     tally[mention] -= 1
 
 
-def sort_two_candidates(judgments_of, tally_of, mentions, ca, cb):
+def sort_two_candidates(tally_of, mentions, ca, cb):
     toca = tally_of[ca]
     tocb = tally_of[cb]
     mdca = get_median(toca, mentions)
@@ -250,18 +250,32 @@ def deliberate(judgments_data,
         # Here we could hook to external, replaceable classes
         # to simplify usage of other algorithms.
         return sort_two_candidates(
-            everyones_judgments,
+            judgments_tallies,
+            mentions,
+            ca, cb)
+
+    sorted_candidates = sort_candidates(
+        judgments_tallies,
+        candidates_list,
+        mentions)
+
+    return sorted_candidates, judgments_tallies
+
+
+def sort_candidates(judgments_tallies, candidates, mentions):
+    def _cmp_candidates(ca, cb):
+        # Here we could hook to external, replaceable classes
+        # to simplify usage of other algorithms.
+        return sort_two_candidates(
             judgments_tallies,
             mentions,
             ca, cb
         )
 
-    sorted_candidates = sorted(
-        candidates_list,
+    return sorted(
+        candidates,
         key=cmp_to_key(_cmp_candidates)
     )
-
-    return sorted_candidates, judgments_tallies
 
 
 def main(args_parser, args):  # move to bottom, no need for a func
