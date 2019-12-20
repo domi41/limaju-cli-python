@@ -92,7 +92,7 @@ setup(
         'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
-        'Intended Audience :: Developers',
+        'Intended Audience :: Citizens',
         # 'Topic :: Software Development :: Build Tools',
 
         # Pick your license as you wish
@@ -115,7 +115,7 @@ setup(
     # project page. What does your project relate to?
     #
     # Note that this is a string of words separated by whitespace, not a list.
-    keywords='sample setuptools development',  # Optional
+    keywords='liquid majority judgment deliberation cli library',  # Optional
 
     # When your source code is in a subdirectory under the project root, e.g.
     # `src/`, it is necessary to specify the `package_dir` argument.
@@ -130,7 +130,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(where='limaju'),  # Required
+    packages=find_packages(where='.'),  # Required
 
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this
