@@ -1,5 +1,5 @@
 import unittest
-from limaju import deliberate
+from limaju import deliberate, plot_merit_profile, load_mentions_from_string
 
 
 class TestLimaju(unittest.TestCase):
@@ -68,6 +68,17 @@ EXCELLENT, EXCELLENT, EXCELLENT, EXCELLENT
         """, self.test_mentions)
 
         self.assertEqual(deliberation, ['B', 'D', 'A', 'C'])
+
+
+    def test_plotting_deliberation(self):
+        mentions = load_mentions_from_string(self.test_mentions)
+        judgments = ''
+        with open("examples/judgments_01.csv") as sample:
+            judgments = "".join(sample.readlines())
+        deliberation, tally = deliberate(judgments, self.test_mentions)
+
+        plot_merit_profile(tally, deliberation, mentions, filename="test_plot.png")
+        # self.assertEqual(deliberation, ['B', 'D', 'A', 'C'])
 
 
     # def test_raise(self):
