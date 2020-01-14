@@ -292,11 +292,11 @@ def plot_merit_profile(judgments_tallies, candidates, mentions, filename=None):
     :param filename: String, should match `*.png` or `*.pdf`. Paths are allowed.
     """
 
-    pprint(judgments_tallies)
-    pprint("candidates")
-    pprint(candidates)
-    pprint("mentions")
-    pprint(mentions)
+    # pprint(judgments_tallies)
+    # pprint("candidates")
+    # pprint(candidates)
+    # pprint("mentions")
+    # pprint(mentions)
 
     bar_girth = 0.62
     candidates = [c for c in reversed(candidates)]  # :(|) oOoK
@@ -350,6 +350,7 @@ def plot_merit_profile(judgments_tallies, candidates, mentions, filename=None):
     # vlorp = 0.05
     barhs = []
     legends = []
+    separators = []
     ind = [i for i in range(candidates_amount)]
     leftOffset = (0,) * candidates_amount
     judgments_sum = (0,) * candidates_amount
@@ -358,7 +359,7 @@ def plot_merit_profile(judgments_tallies, candidates, mentions, filename=None):
         judgments_sum = tuple(p + q for p, q in zip(opinion, judgments_sum))
     judgments_count = max(judgments_sum)
 
-    vlorp = judgments_count * 0.003
+    vlorp = judgments_count * 0.003 * 0
 
     for i, mention in enumerate(mentions):
         #print(u"Plotting bars of mention %s…" % mention)
@@ -366,9 +367,17 @@ def plot_merit_profile(judgments_tallies, candidates, mentions, filename=None):
         barh = plt.barh(ind, opinion, bar_girth, left=leftOffset, color=colors[i])
         barhs.append(barh)
         legends.append(barh[0])
+
+        if i > 0:
+            for j, offset in enumerate(leftOffset):
+                separators.append([
+                    (offset, j-0.5),
+                    (offset, j+0.5),
+                ])
+
         # At some point, we should either go full numpy or not at all
         # The vlorp is a nasty hack to show white separators between colors
-        leftOffset = tuple(p + q + vlorp for p, q in zip(opinion, leftOffset))
+        leftOffset = tuple(p + q + (vlorp if p else 0) for p, q in zip(opinion, leftOffset))
 
     # p1 = plt.barh(ind, menMeans, bar_girth)
     # p2 = plt.barh(ind, womenMeans, bar_girth, left=menMeans)
@@ -391,6 +400,17 @@ def plot_merit_profile(judgments_tallies, candidates, mentions, filename=None):
             shadow=True,
             bbox_to_anchor=(0.5, -0.15),
     )
+
+    from matplotlib.collections import LineCollection
+    # lines = [[(10.0,1.0), (0.0,0.0)]]
+    lc = LineCollection(separators,
+        colors=((1,1,1,1),),
+        linewidths=2,
+    )
+
+    # fig, ax = plt.subplots()
+    # ax.add_collection(lc)
+    plt.gca().add_collection(lc)
 
     plt.axvline(x=adjusted_width*0.5, linestyle='--')
 
